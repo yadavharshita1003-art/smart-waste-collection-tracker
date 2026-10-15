@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Stations · Smart Waste{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Stations</h1></div>
+
+{% if can('master') %}
+<details class="panel">
+  <summary>Add station</summary>
+  <form method="post" action="{{ url_for('views.station_new') }}" class="form-grid">
+    {{ csrf() }}
+    <label>Station name<input name="name" maxlength="100" required></label>
+    <label>Latitude<input name="latitude" type="number" step="any" required></label>
+    <label>Longitude<input name="longitude" type="number" step="any" required></label>
+    <label>Capacity (kg)<input name="capacity_kg" type="number" min="1" step="0.01" required></label>
+    <label>Type
+      <select name="station_type">
+        <option value="transfer">Transfer</option>
+        <option value="landfill">Landfill</option>
+        <option value="recycling">Recycling</option>
+      </select>
+    </label>
+    <button class="btn" type="submit">Add station</button>
+  </form>
+</details>
+{% endif %}
+
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Station</th><th>Name</th><th>Type</th><th>Capacity</th><th>Batches received</th></tr></thead>
+    <tbody>
+      {% for s in rows %}
+      <tr>
+        <td>#{{ s.station_id }}</td>
+        <td>{{ s.name }}</td>
+        <td>{{ s.station_type }}</td>
+        <td>{{ '{:,.0f}'.format(s.capacity_kg) }} kg</td>
+        <td>{{ s.batches_received }}</td>
+      </tr>
+      {% else %}
+      <tr><td class="empty" colspan="5">No stations yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

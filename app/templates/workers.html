@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Workers · Smart Waste{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Workers</h1></div>
+
+{% if can('master') %}
+<details class="panel">
+  <summary>Add worker</summary>
+  <form method="post" action="{{ url_for('views.worker_new') }}" class="form-grid">
+    {{ csrf() }}
+    <label>Full name<input name="name" maxlength="100" required></label>
+    <label>Phone<input name="phone" maxlength="15"></label>
+    <label>Shift
+      <select name="shift">
+        <option value="morning">Morning</option>
+        <option value="afternoon">Afternoon</option>
+        <option value="night">Night</option>
+      </select>
+    </label>
+    <label>Vehicle
+      <select name="vehicle_id">
+        <option value="">Not assigned</option>
+        {% for v in vehicles %}<option value="{{ v.vehicle_id }}">{{ v.vehicle_type }} #{{ v.vehicle_id }}</option>{% endfor %}
+      </select>
+    </label>
+    <button class="btn" type="submit">Add worker</button>
+  </form>
+</details>
+{% endif %}
+
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Worker</th><th>Name</th><th>Phone</th><th>Shift</th><th>Vehicle</th><th></th></tr></thead>
+    <tbody>
+      {% for w in rows %}
+      <tr>
+        <td>#{{ w.worker_id }}</td>
+        <td>{{ w.name }}</td>
+        <td>{{ w.phone or '—' }}</td>
+        <td>{{ w.shift or '—' }}</td>
+        <td>{% if w.vehicle_type %}{{ w.vehicle_type }} #{{ w.assigned_vehicle_id }}{% else %}—{% endif %}</td>
+        <td>
+          {% if can('master') %}
+          <form method="post" action="{{ url_for('views.worker_vehicle', worker_id=w.worker_id) }}" class="inline">
+            {{ csrf() }}
+            <select name="vehicle_id" aria-label="Assigned vehicle">
+              <option value="">Not assigned</option>
+              {% for v in vehicles %}
+              <option value="{{ v.vehicle_id }}" {% if v.vehicle_id == w.assigned_vehicle_id %}selected{% endif %}>{{ v.vehicle_type }} #{{ v.vehicle_id }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn ghost sm" type="submit">Save</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td class="empty" colspan="6">No workers yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pill %}
+{% block title %}Overview · Smart Waste{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Overview</h1></div>
+
+<div class="kpis">
+  <div class="card kpi"><div class="n">{{ stats.bins }}</div><div class="l">Bins</div></div>
+  <div class="card kpi"><div class="n">{{ stats.success_rate or 0 }}%</div><div class="l">Collection success</div></div>
+  <div class="card kpi"><div class="n">{{ stats.open_complaints }}</div><div class="l">Open complaints</div></div>
+  <div class="card kpi"><div class="n">{{ stats.in_transit }}</div><div class="l">Vehicles in transit</div></div>
+</div>
+
+<h2 class="section">Zone collection rate, last 12 months</h2>
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Zone</th><th>Type</th><th>Collected</th></tr></thead>
+    <tbody>
+      {% for z in zones %}
+      <tr>
+        <td>{{ z.name }}</td>
+        <td>{{ z.zone_type }}</td>
+        <td>{% if z.collection_pct is not none %}{{ z.collection_pct }}%{% else %}—{% endif %}</td>
+      </tr>
+      {% else %}
+      <tr><td class="empty" colspan="3">No collection events yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h2 class="section">Recent batches</h2>
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Batch</th><th>Route</th><th>Vehicle</th><th>Date</th><th>Load</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for b in batches %}
+      <tr>
+        <td>#{{ b.batch_id }}</td>
+        <td>{{ b.route_id or '—' }}</td>
+        <td>{{ b.vehicle_type }}</td>
+        <td>{{ b.batch_date|dd }}</td>
+        <td>
+          {% if b.disposed_at %}
+          <div class="util">
+            <div class="util-bar"><span class="{{ 'hi' if b.utilization and b.utilization > 90 }}" style="width: {{ [b.utilization or 0, 100]|min }}%"></span></div>
+            <span>{{ b.utilization }}%</span>
+          </div>
+          {% else %}<span class="muted">In progress</span>{% endif %}
+        </td>
+        <td>{{ pill('closed', 'Closed') if b.disposed_at else pill('in_transit', 'Open') }}</td>
+      </tr>
+      {% else %}
+      <tr><td class="empty" colspan="6">No batches yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h2 class="section">Latest collections</h2>
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Time</th><th>Bin</th><th>Worker</th><th>Result</th></tr></thead>
+    <tbody>
+      {% for e in events %}
+      <tr>
+        <td>{{ e.event_timestamp|dt }}</td>
+        <td>#{{ e.bin_id }}</td>
+        <td>{{ e.worker_name }}</td>
+        <td>{{ pill(e.status) }}</td>
+      </tr>
+      {% else %}
+      <tr><td class="empty" colspan="4">No collections yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

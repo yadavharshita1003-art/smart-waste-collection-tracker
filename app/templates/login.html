@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Sign in · Smart Waste{% endblock %}
+{% block public %}
+<section class="login">
+  <div class="login-side">
+    <h1>Smart Waste Collection Tracker</h1>
+    <svg viewBox="0 0 520 320" aria-hidden="true">
+      {% if hero %}
+      <polyline points="{% for p in hero %}{{ p.x }},{{ p.y }} {% endfor %}"
+                fill="none" stroke="#3E6A5E" stroke-width="3"
+                stroke-dasharray="2 9" stroke-linecap="round"/>
+      {% for p in hero %}
+      <circle cx="{{ p.x }}" cy="{{ p.y }}" r="11"
+              style="fill: var(--s-{{ p.status }})"/>
+      <circle cx="{{ p.x }}" cy="{{ p.y }}" r="4" fill="#15201C"/>
+      {% endfor %}
+      {% endif %}
+    </svg>
+  </div>
+
+  <div class="login-form">
+    <form method="post" class="stack" style="width: min(360px, 100%)">
+      {{ csrf() }}
+      <h2>Sign in</h2>
+      <label>Username
+        <input name="username" autocomplete="username" required autofocus>
+      </label>
+      <label>Password
+        <input name="password" type="password"
+               autocomplete="current-password" required>
+      </label>
+      <p class="err" role="alert">{{ error or '' }}</p>
+      <button class="btn wide" type="submit">Sign in</button>
+      <p style="text-align:center; margin-top:12px">
+        New citizen?
+        <a href="{{ url_for('auth.register') }}">Create an account</a>
+      </p>
+    </form>
+  </div>
+</section>
+{% endblock %}

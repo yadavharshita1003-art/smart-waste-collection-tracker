@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Zones · Smart Waste{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Zones</h1></div>
+
+{% if can('master') %}
+<details class="panel">
+  <summary>Add zone</summary>
+  <form method="post" action="{{ url_for('views.zone_new') }}" class="form-grid">
+    {{ csrf() }}
+    <label>Zone name<input name="name" maxlength="100" required></label>
+    <label>Parent zone
+      <select name="parent_zone_id">
+        <option value="">None (top level)</option>
+        {% for p in parents %}<option value="{{ p.zone_id }}">{{ p.name }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Type
+      <select name="zone_type">
+        <option value="city">City</option>
+        <option value="zone">Zone</option>
+        <option value="ward">Ward</option>
+        <option value="street" selected>Street</option>
+      </select>
+    </label>
+    <button class="btn" type="submit">Add zone</button>
+  </form>
+</details>
+{% endif %}
+
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Zone</th><th>Name</th><th>Type</th><th>Parent</th><th>Bins</th></tr></thead>
+    <tbody>
+      {% for z in rows %}
+      <tr>
+        <td>#{{ z.zone_id }}</td>
+        <td>{{ z.name }}</td>
+        <td>{{ z.zone_type }}</td>
+        <td>{{ z.parent_name or '—' }}</td>
+        <td>{{ z.bin_count }}</td>
+      </tr>
+      {% else %}
+      <tr><td class="empty" colspan="5">No zones yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

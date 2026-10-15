@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Something went wrong · Smart Waste{% endblock %}
+{% block content %}
+<div class="card" style="max-width: 480px;">
+  <h1>Something went wrong</h1>
+  <p class="muted">{{ message }}</p>
+  <p><a class="btn" href="{{ url_for('views.overview') }}">Back to overview</a></p>
+</div>
+{% endblock %}
+{% block public %}
+<div class="standalone">
+  <div class="card">
+    <h1>Something went wrong</h1>
+    <p class="muted">{{ message }}</p>
+    <p><a class="btn" href="{{ url_for('auth.login') }}">Back to sign in</a></p>
+  </div>
+</div>
+{% endblock %}

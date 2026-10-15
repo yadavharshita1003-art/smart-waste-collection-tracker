@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pill, csrf %}
+{% block title %}Vehicles · Smart Waste{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Vehicles</h1></div>
+
+{% if can('master') %}
+<details class="panel">
+  <summary>Add vehicle</summary>
+  <form method="post" action="{{ url_for('views.vehicle_new') }}" class="form-grid">
+    {{ csrf() }}
+    <label>Vehicle type<input name="vehicle_type" maxlength="30" required></label>
+    <label>Capacity (kg)<input name="capacity_kg" type="number" min="1" step="0.01" required></label>
+    <button class="btn" type="submit">Add vehicle</button>
+  </form>
+</details>
+{% endif %}
+
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Vehicle</th><th>Type</th><th>Capacity</th><th>Status</th><th>Crew</th><th></th></tr></thead>
+    <tbody>
+      {% for v in rows %}
+      <tr>
+        <td>#{{ v.vehicle_id }}</td>
+        <td>{{ v.vehicle_type }}</td>
+        <td>{{ '{:,.0f}'.format(v.capacity_kg) }} kg</td>
+        <td>{{ pill(v.current_status) }}</td>
+        <td>{{ v.crew or '—' }}</td>
+        <td>
+          {% if can('vehicle') and v.current_status != 'in_transit' %}
+          <form method="post" action="{{ url_for('views.vehicle_status', vehicle_id=v.vehicle_id) }}" class="inline">
+            {{ csrf() }}
+            <select name="status" aria-label="Vehicle status">
+              <option value="idle" {% if v.current_status == 'idle' %}selected{% endif %}>Idle</option>
+              <option value="maintenance" {% if v.current_status == 'maintenance' %}selected{% endif %}>Maintenance</option>
+            </select>
+            <button class="btn ghost sm" type="submit">Save</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td class="empty" colspan="6">No vehicles yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

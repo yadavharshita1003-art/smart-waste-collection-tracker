@@ -1,0 +1,47 @@
+
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+
+{% block title %}Create Citizen Account · Smart Waste{% endblock %}
+
+{% block public %}
+<section class="login">
+  <div class="login-side">
+    <h1>Join Smart Waste Collection Tracker</h1>
+    <p>Report waste issues and track your complaints.</p>
+  </div>
+
+  <div class="login-form">
+    <form method="post" class="stack" style="width:min(360px,100%)">
+      {{ csrf() }}
+      <h2>Create Citizen Account</h2>
+
+      <label>Full name
+        <input name="full_name" maxlength="100" required>
+      </label>
+
+      <label>Username
+        <input name="username" maxlength="50"
+               autocomplete="username" required>
+      </label>
+
+      <label>Password
+        <input name="password" type="password"
+               minlength="8" autocomplete="new-password" required>
+      </label>
+
+      <label>Confirm password
+        <input name="confirm_password" type="password"
+               minlength="8" autocomplete="new-password" required>
+      </label>
+
+      <p class="err" role="alert">{{ error or '' }}</p>
+      <button class="btn wide" type="submit">Create account</button>
+      <p style="text-align:center">
+        Already registered?
+        <a href="{{ url_for('auth.login') }}">Sign in</a>
+      </p>
+    </form>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,110 @@
+
+{% extends "base.html" %}
+
+{% block title %}My Citizen Dashboard | Smart Waste{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">CITIZEN PORTAL</p>
+        <h1>My Citizen Dashboard</h1>
+        <p class="muted">
+            Welcome, {{ user.full_name }}. Report waste issues and track your complaints.
+        </p>
+    </div>
+</section>
+
+<section class="stats-grid">
+    <article class="stat-card">
+        <p>Total complaints</p>
+        <h2>{{ complaints|length }}</h2>
+    </article>
+    <article class="stat-card">
+        <p>Open complaints</p>
+        <h2>{{ complaints|selectattr("status", "equalto", "open")|list|length }}</h2>
+    </article>
+    <article class="stat-card">
+        <p>Resolved complaints</p>
+        <h2>{{ complaints|selectattr("status", "equalto", "resolved")|list|length }}</h2>
+    </article>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <h2>Report a waste issue</h2>
+            <p class="muted">Choose a bin and describe the problem.</p>
+        </div>
+    </div>
+
+    <form method="post" action="{{ url_for('auth.citizen_complaint_new') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <label for="bin_id">Waste bin</label>
+        <select id="bin_id" name="bin_id" required>
+            <option value="">Select a bin</option>
+            {% for bin in bins %}
+            <option value="{{ bin.bin_id }}">
+                {{ bin.bin_id }} — {{ bin.bin_type|title }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <label for="description">Describe the issue</label>
+        <textarea
+            id="description"
+            name="description"
+            rows="4"
+            maxlength="500"
+            placeholder="For example: The bin is overflowing."
+            required
+        ></textarea>
+
+        <button class="btn" type="submit">Submit complaint</button>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <h2>My complaints</h2>
+            <p class="muted">Track complaints submitted from your account.</p>
+        </div>
+    </div>
+
+    {% if complaints %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Bin ID</th>
+                    <th>Complaint No.</th>
+                    <th>Date raised</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for complaint in complaints %}
+                <tr>
+                    <td>{{ complaint.bin_id }}</td>
+                    <td>#{{ complaint.complaint_seq_no }}</td>
+                    <td>{{ complaint.date_raised|dd }}</td>
+                    <td>{{ complaint.description }}</td>
+                    <td>
+                        <span class="status {{ complaint.status }}">
+                            {{ complaint.status|title }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="empty-state">
+        You have not submitted any complaints yet.
+    </p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pill, csrf %}
+{% block title %}Batches · Smart Waste{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Batches</h1></div>
+
+{% if can('batch') %}
+<details class="panel">
+  <summary>New batch</summary>
+  <form method="post" action="{{ url_for('views.batch_new') }}" class="form-grid">
+    {{ csrf() }}
+    <label>Vehicle
+      <select name="vehicle_id" required>
+        {% for v in vehicles %}
+        <option value="{{ v.vehicle_id }}" {% if v.current_status != 'idle' %}disabled{% endif %}>
+          {{ v.vehicle_type }} #{{ v.vehicle_id }} ({{ v.current_status|replace('_', ' ') }})
+        </option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Route code<input name="route_id" maxlength="20"></label>
+    <label>Batch date<input type="date" name="batch_date" value="{{ today() }}" required></label>
+    <button class="btn" type="submit">Create batch</button>
+  </form>
+</details>
+{% endif %}
+
+<div class="card table-wrap">
+  <table>
+    <thead>
+      <tr><th>Batch</th><th>Route</th><th>Vehicle</th><th>Date</th><th>Weight</th><th>Load</th><th>Station</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for b in batches %}
+      <tr>
+        <td>#{{ b.batch_id }}</td>
+        <td>{{ b.route_id or '—' }}</td>
+        <td>{{ b.vehicle_type }} #{{ b.vehicle_id }}</td>
+        <td>{{ b.batch_date|dd }}</td>
+        <td>{{ '%.0f'|format(b.total_weight or 0) }} kg</td>
+        <td>
+          {% if b.disposed_at %}
+          <div class="util">
+            <div class="util-bar"><span class="{{ 'hi' if b.utilization and b.utilization > 90 }}" style="width: {{ [b.utilization or 0, 100]|min }}%"></span></div>
+            <span>{{ b.utilization }}%</span>
+          </div>
+          {% else %}<span class="muted">In progress</span>{% endif %}
+        </td>
+        <td>{{ b.station_name or '—' }}</td>
+        <td>
+          {% if b.disposed_at %}
+            {{ pill('closed') }}
+          {% elif can('batch') %}
+          <form method="post" action="{{ url_for('views.batch_close', batch_id=b.batch_id) }}" class="inline">
+            {{ csrf() }}
+            <select name="station_id" required aria-label="Transfer station">
+              <option value="">Station</option>
+              {% for s in stations %}<option value="{{ s.station_id }}">{{ s.name }}</option>{% endfor %}
+            </select>
+            <input name="weight" type="number" step="0.01" min="0" placeholder="kg" required aria-label="Weight in kg">
+            <button class="btn sm" type="submit">Close</button>
+          </form>
+          {% else %}
+            {{ pill('in_transit', 'Open') }}
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td class="empty" colspan="8">No batches yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

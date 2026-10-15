@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pill, csrf %}
+{% block title %}Collections · Smart Waste{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Collections</h1></div>
+
+{% if can('collection') %}
+<details class="panel">
+  <summary>Record collection</summary>
+  <form method="post" action="{{ url_for('views.collection_new') }}" class="form-grid">
+    {{ csrf() }}
+    <label>Bin
+      <select name="bin_id" required>
+        {% for b in bins %}<option value="{{ b.bin_id }}">#{{ b.bin_id }} · {{ b.bin_type }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Open batch
+      <select name="batch_id" required>
+        {% for b in open_batches %}<option value="{{ b.batch_id }}">#{{ b.batch_id }} · {{ b.route_id or 'no route' }}</option>{% endfor %}
+      </select>
+    </label>
+    {% if user.role != 'worker' %}
+    <label>Worker
+      <select name="worker_id" required>
+        {% for w in workers %}<option value="{{ w.worker_id }}">{{ w.name }}</option>{% endfor %}
+      </select>
+    </label>
+    {% endif %}
+    <label>Result
+      <select name="status">
+        <option value="collected">Collected</option>
+        <option value="missed">Missed</option>
+        <option value="scheduled">Scheduled</option>
+      </select>
+    </label>
+    <label>Remarks<input name="remarks" maxlength="200"></label>
+    <button class="btn" type="submit">Record</button>
+  </form>
+</details>
+{% endif %}
+
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Time</th><th>Bin</th><th>Zone</th><th>Batch</th><th>Worker</th><th>Result</th><th>Remarks</th></tr></thead>
+    <tbody>
+      {% for e in rows %}
+      <tr>
+        <td>{{ e.event_timestamp|dt }}</td>
+        <td>#{{ e.bin_id }}</td>
+        <td>{{ e.zone_name }}</td>
+        <td>#{{ e.batch_id }}</td>
+        <td>{{ e.worker_name }}</td>
+        <td>{{ pill(e.status) }}</td>
+        <td>{{ e.remarks or '' }}</td>
+      </tr>
+      {% else %}
+      <tr><td class="empty" colspan="7">No collections yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

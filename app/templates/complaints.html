@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pill, csrf %}
+{% block title %}Complaints · Smart Waste{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Complaints</h1></div>
+
+{% if can('complaint') %}
+<details class="panel">
+  <summary>Raise complaint</summary>
+  <form method="post" action="{{ url_for('views.complaint_new') }}" class="form-grid">
+    {{ csrf() }}
+    <label>Bin
+      <select name="bin_id" required>
+        {% for b in bins %}<option value="{{ b.bin_id }}">#{{ b.bin_id }}</option>{% endfor %}
+      </select>
+    </label>
+    <label style="grid-column: span 2">Description
+      <input name="description" maxlength="500" required>
+    </label>
+    <button class="btn" type="submit">Raise complaint</button>
+  </form>
+</details>
+{% endif %}
+
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Bin</th><th>No.</th><th>Zone</th><th>Raised</th><th>Description</th><th>Status</th><th>Resolved by</th><th></th></tr></thead>
+    <tbody>
+      {% for c in rows %}
+      <tr>
+        <td>#{{ c.bin_id }}</td>
+        <td>#{{ c.complaint_seq_no }}</td>
+        <td>{{ c.zone_name }}</td>
+        <td>{{ c.date_raised|dd }}</td>
+        <td style="white-space: normal; min-width: 240px">{{ c.description }}</td>
+        <td>{{ pill(c.status) }}</td>
+        <td>{{ c.resolved_name or '—' }}</td>
+        <td>
+          {% if c.status == 'open' and can('complaint') %}
+          <form method="post" action="{{ url_for('views.complaint_resolve', bin_id=c.bin_id, seq=c.complaint_seq_no) }}" class="inline">
+            {{ csrf() }}
+            {% if user.role != 'worker' %}
+            <select name="worker_id" required aria-label="Resolved by">
+              {% for w in workers %}<option value="{{ w.worker_id }}">{{ w.name }}</option>{% endfor %}
+            </select>
+            {% endif %}
+            <button class="btn sm" type="submit">Resolve</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td class="empty" colspan="8">No complaints.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
